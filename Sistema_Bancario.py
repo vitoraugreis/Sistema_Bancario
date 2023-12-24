@@ -22,23 +22,33 @@ Insira a operação desejada : """
 
 def cadastrar_usuario(usuarios: list, /):
     cpf = input("Informe o cpf do usuário: ")
-    verificado = validar_cadastro(usuarios, cpf)
-    if verificado:
-        nome = input("Informe o nome do usuário: ")
-        data_nascimento = input("Informe a data de nascimento do usuário (DD/MM/AAAA): ")
-        endereco = input("Informe o endereço do usuário (logadouto, número - bairro - cidade/sigla do estado): ")
-        usuarios.append({"CPF" : cpf, "Nome" : nome, "Data de nascimento" : data_nascimento, "Endereço": endereco})
+    verificacao_cpf = validar_cpf(cpf)
+    if verificacao_cpf:
+        verificacao_usuario = not procurar_usuario(usuarios, cpf)
+        if verificacao_usuario:
+            nome = input("Informe o nome do usuário: ")
+            data_nascimento = input("Informe a data de nascimento do usuário (DD/MM/AAAA): ")
+            endereco = input("Informe o endereço do usuário (logadouto, número - bairro - cidade/sigla do estado): ")
+            usuarios.append({"CPF" : cpf, "Nome" : nome, "Data de nascimento" : data_nascimento, "Endereço": endereco})
+        else:
+            print("ERRO: cpf já cadastrado.")
 
-def validar_cadastro(usuarios: list, cpf, /):
+def validar_cpf(cpf, /):
+    if not cpf.isnumeric():
+        print("ERRO: cpf deve conter apenas números.")
+        return False
     if len(cpf) != 11:
         print("ERRO: cpf informado é inválido.\nO cpf deve conter 11 números.")
         return False
-    for usuario in usuarios:
-        if cpf in usuario.values():
-            print("ERRO: cpf já cadastrado.")
-            return False
     
     return True
+
+def procurar_usuario(usuarios: list, cpf, /):
+    for usuario in usuarios:
+        if cpf in usuario.values():
+            return True
+
+    return False
 
 def listar_usuarios(usuarios: list, /):
     for usuario in usuarios:
@@ -92,6 +102,9 @@ def main():
     
         if operacao == 1:
             cadastrar_usuario(usuarios)
+        
+        elif operacao == 2:
+            listar_usuarios(usuarios)
         
         elif operacao == 3:
             valor = float(input("Insira o quanto deseja depositar: "))
