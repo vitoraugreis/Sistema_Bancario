@@ -1,23 +1,20 @@
-# Função Criar Conta (NOVA):
-    # Deve armazenar as contas em uma lista.
-    # Conta: Agência, número, usuário.
-        # Agência fixa: 0001 e número sequencial -> Começa do 1.
-# -------------------------------------------------------------------------------------
-
 import os
-def menu():
-    menu = """
--------- MENU --------
-(1) - Cadastrar usuário
-(2) - Cadastrar conta
-(3) - Deposito
-(4) - Saque
-(5) - Extrato
-(0) - Sair
-----------------------
-Insira a operação desejada : """
 
-    return int(input(menu))
+def menu(primeiro_menu):
+    if not primeiro_menu: print()
+
+    menu = " MENU "
+    print(menu.center(30, '-'))
+    print("(1) - Cadastrar usuário")
+    print("(2)- Cadastrar conta")
+    print("(3) - Deposito")
+    print("(4) - Saque")
+    print("(5) - Extrato")
+    print("(0) - Sair")
+    print('-'*30)
+    print("Insira a operação desejada :", end = " ")
+
+    return int(input())
 
 def cadastrar_usuario(*, usuarios: list):
     cpf = input("Informe o cpf do usuário: ")
@@ -120,6 +117,7 @@ def main():
     MAX_VALOR_SAQUE = 500
     NUM_AGENCIA = "0001"
 
+    primeiro_menu = True
     saldo = 500
     extrato = ""
     saques_diarios = 0
@@ -130,7 +128,8 @@ def main():
     os.system("cls")
     
     while True:
-        operacao = menu()
+        operacao = menu(primeiro_menu)
+        primeiro_menu = False
         os.system("cls")
     
         if operacao == 1:
