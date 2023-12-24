@@ -77,34 +77,37 @@ def historico(saldo, /, *,  extrato):
     print(f"Saldo: R$ {saldo : .2f}")
     print("=======================================")
 
-saldo = 500
-extrato = ""
-saques_diarios = 0
-usuarios = list()
-contas = list()
-
-os.system("cls")
-
-while True:
-    operacao = int(input(MENU))
-    os.system("cls")
-
-    if operacao == 1:
-        cadastrar_usuario(usuarios)
+def main():
+    saldo = 500
+    extrato = ""
+    saques_diarios = 0
+    usuarios = list()
+    contas = list()
     
-    elif operacao == 3:
-        valor = float(input("Insira o quanto deseja depositar: "))
-        saldo, extrato = deposito(saldo, valor, extrato)
+    os.system("cls")
+    
+    while True:
+        operacao = int(input(MENU))
+        os.system("cls")
+    
+        if operacao == 1:
+            cadastrar_usuario(usuarios)
+        
+        elif operacao == 3:
+            valor = float(input("Insira o quanto deseja depositar: "))
+            saldo, extrato = deposito(saldo, valor, extrato)
+    
+        elif operacao == 4:
+            valor = float(input("Insira o quanto deseja sacar: "))
+            saldo, extrato, saques_diarios = saque(saldo=saldo, valor=valor, extrato=extrato, max_valor_saque=MAX_VALOR_SAQUE, max_saque_diario=MAX_SAQUE_DIARIO, numero_saques=saques_diarios)
+    
+        elif operacao == 5:
+            historico(saldo, extrato=extrato)
+    
+        elif operacao == 0:
+            break
+    
+        else:
+            print("Operação inválida.")
 
-    elif operacao == 4:
-        valor = float(input("Insira o quanto deseja sacar: "))
-        saldo, extrato, saques_diarios = saque(saldo=saldo, valor=valor, extrato=extrato, max_valor_saque=MAX_VALOR_SAQUE, max_saque_diario=MAX_SAQUE_DIARIO, numero_saques=saques_diarios)
-
-    elif operacao == 5:
-        historico(saldo, extrato=extrato)
-
-    elif operacao == 0:
-        break
-
-    else:
-        print("Operação inválida.")
+main()
