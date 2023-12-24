@@ -5,11 +5,8 @@
 # -------------------------------------------------------------------------------------
 
 import os
-
-MAX_SAQUE_DIARIO = 3
-MAX_VALOR_SAQUE = 500
-NUM_AGENCIA = "0001"
-MENU = """
+def menu():
+    menu = """
 -------- MENU --------
 (1) - Cadastrar usuário
 (2) - Cadastrar conta
@@ -20,8 +17,15 @@ MENU = """
 ----------------------
 Insira a operação desejada : """
 
-def cadastrar_usuario(usuarios: list, /):
+    return int(input(menu))
+
+def cadastrar_usuario(*, usuarios: list):
     cpf = input("Informe o cpf do usuário: ")
+
+    if cpf == "adm":
+        listar_usuarios(usuarios=usuarios)
+        return
+
     verificacao_cpf = validar_cpf(cpf)
     if verificacao_cpf:
         verificacao_usuario = not procurar_usuario(usuarios, cpf)
@@ -50,9 +54,33 @@ def procurar_usuario(usuarios: list, cpf, /):
 
     return False
 
-def listar_usuarios(usuarios: list, /):
+def listar_usuarios(*, usuarios: list):
     for usuario in usuarios:
         print(usuario)
+
+def cadastrar_conta(agencia, numero_conta, /, *, usuarios: list, contas: list):
+    cpf = input("Insira o cpf do proprietário: ")
+
+    if cpf == "adm": 
+        listar_contas(contas=contas)
+        return False
+    
+    verificacao_cpf = validar_cpf(cpf)
+    if verificacao_cpf:
+        verificacao_usuario = procurar_usuario(usuarios, cpf)
+        if verificacao_usuario:
+            contas.append({"Agencia":agencia, "Número":numero_conta, "Proprietário":cpf})
+            print("Conta criada com sucesso.")
+            return True
+        else:
+            print("ERRO: cpf não cadastrado.")
+            return False
+    else:
+        return False
+
+def listar_contas(*, contas: list):
+    for conta in contas:
+        print(conta)
 
 def saque(*, saldo, valor, extrato, max_valor_saque, max_saque_diario, numero_saques):
     if numero_saques == max_saque_diario:
@@ -88,23 +116,29 @@ def historico(saldo, /, *,  extrato):
     print("=======================================")
 
 def main():
+    MAX_SAQUE_DIARIO = 3
+    MAX_VALOR_SAQUE = 500
+    NUM_AGENCIA = "0001"
+
     saldo = 500
     extrato = ""
     saques_diarios = 0
     usuarios = list()
     contas = list()
+    numero_conta = 1
     
     os.system("cls")
     
     while True:
-        operacao = int(input(MENU))
+        operacao = menu()
         os.system("cls")
     
         if operacao == 1:
-            cadastrar_usuario(usuarios)
+            cadastrar_usuario(usuarios=usuarios)
         
         elif operacao == 2:
-            listar_usuarios(usuarios)
+            cadastro = cadastrar_conta(NUM_AGENCIA, numero_conta, usuarios=usuarios, contas=contas)
+            if cadastro: numero_conta += 1
         
         elif operacao == 3:
             valor = float(input("Insira o quanto deseja depositar: "))
