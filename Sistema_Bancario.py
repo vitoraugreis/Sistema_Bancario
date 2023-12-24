@@ -1,14 +1,3 @@
-# Função Deposito:
-    # Positional only
-    # Sugestões:
-        # Parametros: saldo, valor, extrato
-        # Retorno: saldo, extrato
-# -------------------------------------------------------------------------------------
-# Função Extrato:
-    # Positional only e keyword only
-    # Positional only: saldo
-    # Keyword only: extrato
-# -------------------------------------------------------------------------------------
 # Função Criar Usuário (NOVA):
     # Deve armazenar os usuários em uma lista.
     # Usuário: nome, data de nascimento, cpf, endereço
@@ -61,6 +50,12 @@ def deposito(saldo, valor, extrato, /):
 
     return saldo, extrato
 
+def historico(saldo, /, *,  extrato):
+    print("=============== EXTRATO ===============")
+    print("A conta não possui extrato\n" if not extrato else extrato)
+    print(f"Saldo: R$ {saldo : .2f}")
+    print("=======================================")
+
 saldo = 500
 extrato = ""
 saques_diarios = 0
@@ -80,10 +75,7 @@ while True:
         saldo, extrato, saques_diarios = saque(saldo=saldo, valor=valor, extrato=extrato, max_valor_saque=MAX_VALOR_SAQUE, max_saque_diario=MAX_SAQUE_DIARIO, numero_saques=saques_diarios)
 
     elif operacao == 3:
-        print("=============== EXTRATO ===============")
-        print("A conta não possui extrato\n" if not extrato else extrato)
-        print(f"Saldo: R$ {saldo : .2f}")
-        print("=======================================")
+        historico(saldo, extrato=extrato)
 
     elif operacao == 0:
         break
