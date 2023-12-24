@@ -1,7 +1,30 @@
+# Função Deposito:
+    # Positional only
+    # Sugestões:
+        # Parametros: saldo, valor, extrato
+        # Retorno: saldo, extrato
+# -------------------------------------------------------------------------------------
+# Função Extrato:
+    # Positional only e keyword only
+    # Positional only: saldo
+    # Keyword only: extrato
+# -------------------------------------------------------------------------------------
+# Função Criar Usuário (NOVA):
+    # Deve armazenar os usuários em uma lista.
+    # Usuário: nome, data de nascimento, cpf, endereço
+        # endereço: logadouro, número - bairro - cidade/sigla do estado
+# -------------------------------------------------------------------------------------
+# Função Criar Conta (NOVA):
+    # Deve armazenar as contas em uma lista.
+    # Conta: Agência, número, usuário.
+        # Agência fixa: 0001 e número sequencial -> Começa do 1.
+# -------------------------------------------------------------------------------------
+
 import os
 
 MAX_SAQUE_DIARIO = 3
 MAX_VALOR_SAQUE = 500
+NUM_AGENCIA = "0001"
 MENU = """
 -------- MENU --------
 (1) - Deposito
@@ -10,6 +33,22 @@ MENU = """
 (0) - Sair
 ----------------------
 Insira a operação desejada : """
+
+def saque(*, saldo, valor, extrato, max_valor_saque, max_saque_diario, numero_saques):
+    if numero_saques == max_saque_diario:
+        print("Operacao invalida. Limite de saques diarios atingido.")
+    elif valor > max_valor_saque:
+        print("Valor invalido. O limite de valor de saque eh de R$ 500.00")
+    elif valor <= 0:
+        print("Valor invalido. O valor de saque deve ser maior que zero.")
+    elif valor > saldo:
+        print("Valor invalido. O valor inserido eh maior que o saldo da conta.")
+    else:
+        saldo -= valor
+        numero_saques += 1
+        extrato += f"- Saque: R$ {valor : .2f}\n"
+        print("Saque feito com sucesso!")
+    return saldo, extrato, numero_saques
 
 saldo = 500
 extrato = ""
@@ -29,20 +68,8 @@ while True:
             extrato += f"+ Deposito: R$ {deposito : .2f}\n"
 
     elif operacao == 2:
-        if saques_diarios == MAX_SAQUE_DIARIO:
-            print("Operacao invalida. Limite de saques diarios atingido.")
-        else:
-            saque = float(input("Insira o quanto deseja sacar: "))
-            if saque > MAX_VALOR_SAQUE:
-                print("Valor invalido. O limite de valor de saque eh de R$ 500.00")
-            elif saque <= 0:
-                print("Valor invalido. O valor de saque deve ser maior que zero.")
-            elif saque > saldo:
-                print("Valor invalido. O valor inserido eh maior que o saldo da conta.")
-            else:
-                saldo -= saque
-                saques_diarios += 1
-                extrato += f"- Saque: R$ {saque : .2f}\n"
+        valor = float(input("Insira o quanto deseja sacar: "))
+        saldo, extrato, saques_diarios = saque(saldo=saldo, valor=valor, extrato=extrato, max_valor_saque=MAX_VALOR_SAQUE, max_saque_diario=MAX_SAQUE_DIARIO, numero_saques=saques_diarios)
 
     elif operacao == 3:
         print("=============== EXTRATO ===============")
