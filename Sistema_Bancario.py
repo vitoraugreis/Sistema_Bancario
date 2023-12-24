@@ -1,8 +1,3 @@
-# Função Criar Usuário (NOVA):
-    # Deve armazenar os usuários em uma lista.
-    # Usuário: nome, data de nascimento, cpf, endereço
-        # endereço: logadouro, número - bairro - cidade/sigla do estado
-# -------------------------------------------------------------------------------------
 # Função Criar Conta (NOVA):
     # Deve armazenar as contas em uma lista.
     # Conta: Agência, número, usuário.
@@ -16,12 +11,38 @@ MAX_VALOR_SAQUE = 500
 NUM_AGENCIA = "0001"
 MENU = """
 -------- MENU --------
-(1) - Deposito
-(2) - Saque
-(3) - Extrato
+(1) - Cadastrar usuário
+(2) - Cadastrar conta
+(3) - Deposito
+(4) - Saque
+(5) - Extrato
 (0) - Sair
 ----------------------
 Insira a operação desejada : """
+
+def cadastrar_usuario(usuarios: list, /):
+    cpf = input("Informe o cpf do usuário: ")
+    verificado = validar_cadastro(usuarios, cpf)
+    if verificado:
+        nome = input("Informe o nome do usuário: ")
+        data_nascimento = input("Informe a data de nascimento do usuário (DD/MM/AAAA): ")
+        endereco = input("Informe o endereço do usuário (logadouto, número - bairro - cidade/sigla do estado): ")
+        usuarios.append({"CPF" : cpf, "Nome" : nome, "Data de nascimento" : data_nascimento, "Endereço": endereco})
+
+def validar_cadastro(usuarios: list, cpf, /):
+    if len(cpf) != 11:
+        print("ERRO: cpf informado é inválido.\nO cpf deve conter 11 números.")
+        return False
+    for usuario in usuarios:
+        if cpf in usuario.values():
+            print("ERRO: cpf já cadastrado.")
+            return False
+    
+    return True
+
+def listar_usuarios(usuarios: list, /):
+    for usuario in usuarios:
+        print(usuario)
 
 def saque(*, saldo, valor, extrato, max_valor_saque, max_saque_diario, numero_saques):
     if numero_saques == max_saque_diario:
@@ -59,6 +80,8 @@ def historico(saldo, /, *,  extrato):
 saldo = 500
 extrato = ""
 saques_diarios = 0
+usuarios = list()
+contas = list()
 
 os.system("cls")
 
@@ -67,14 +90,17 @@ while True:
     os.system("cls")
 
     if operacao == 1:
+        cadastrar_usuario(usuarios)
+    
+    elif operacao == 3:
         valor = float(input("Insira o quanto deseja depositar: "))
         saldo, extrato = deposito(saldo, valor, extrato)
 
-    elif operacao == 2:
+    elif operacao == 4:
         valor = float(input("Insira o quanto deseja sacar: "))
         saldo, extrato, saques_diarios = saque(saldo=saldo, valor=valor, extrato=extrato, max_valor_saque=MAX_VALOR_SAQUE, max_saque_diario=MAX_SAQUE_DIARIO, numero_saques=saques_diarios)
 
-    elif operacao == 3:
+    elif operacao == 5:
         historico(saldo, extrato=extrato)
 
     elif operacao == 0:
