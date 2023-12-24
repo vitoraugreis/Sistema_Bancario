@@ -48,7 +48,18 @@ def saque(*, saldo, valor, extrato, max_valor_saque, max_saque_diario, numero_sa
         numero_saques += 1
         extrato += f"- Saque: R$ {valor : .2f}\n"
         print("Saque feito com sucesso!")
+
     return saldo, extrato, numero_saques
+
+def deposito(saldo, valor, extrato, /):
+    if valor <= 0:
+        print("Valor invalido. O valor inserido deve ser maior que 0.")
+    else:
+        saldo += valor
+        extrato += f"+ Deposito: R$ {valor : .2f}\n"
+        print("Depósito feito com sucesso!")
+
+    return saldo, extrato
 
 saldo = 500
 extrato = ""
@@ -59,13 +70,10 @@ os.system("cls")
 while True:
     operacao = int(input(MENU))
     os.system("cls")
+
     if operacao == 1:
-        deposito = float(input("Insira o quanto deseja depositar: "))
-        if deposito <= 0:
-            print("Valor invalido. O valor inserido deve ser maior que 0.")
-        else:
-            saldo += deposito
-            extrato += f"+ Deposito: R$ {deposito : .2f}\n"
+        valor = float(input("Insira o quanto deseja depositar: "))
+        saldo, extrato = deposito(saldo, valor, extrato)
 
     elif operacao == 2:
         valor = float(input("Insira o quanto deseja sacar: "))
