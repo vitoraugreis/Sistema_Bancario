@@ -1,4 +1,43 @@
 import os
+from abc import ABC, abstractmethod
+
+class Cliente:
+    def __init__(self, endereco):
+        self._endereco = endereco
+        self.contas = []
+
+    @property
+    def endereco(self):
+        return self._endereco
+    
+    @property
+    def contas(self):
+        return self.contas
+    
+    def adicionar_conta(self, conta): # Veridicação da condição da conta feita em outro lugar.
+        self._contas.append(conta)
+    
+    def realizar_transacao(conta, transacao):
+        pass
+
+class PessoaFisica(Cliente):
+    def __init__(self, nome, cpf, data_nascimento, endereco):
+        super().__init__(endereco)
+        self._nome = nome
+        self._cpf = cpf
+        self._data_nascimento = data_nascimento
+
+    @property
+    def nome(self):
+        return self._nome
+    
+    @property
+    def cpf(self):
+        return self._cpf
+    
+    @property
+    def data_nascimento(self):
+        return self._data_nascimento
 
 def menu(primeiro_menu):
     if not primeiro_menu: print()
