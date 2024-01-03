@@ -39,6 +39,60 @@ class PessoaFisica(Cliente):
     def data_nascimento(self):
         return self._data_nascimento
 
+class Conta:
+    def __init__(self, numero, agencia, cliente, historico):
+        self._saldo = 0
+        self._numero = numero
+        self._agencia = "0001"
+        self._cliente = cliente
+        self._historico = Historico()
+    
+    @property
+    def saldo(self):
+        return self._saldo
+    
+    @property
+    def numero(self):
+        return self._numero
+
+    @property
+    def agencia(self):
+        return self._agencia
+
+    @property
+    def cliente(self):
+        return self._cliente
+
+    @property
+    def historico(self):
+        return self._historico
+
+    @classmethod
+    def nova_conta(cls, cliente, numero):
+        pass
+
+class ContaCorrente(Conta):
+    def __init__(self, numero, cliente, limite=500, limite_saques=3):
+        super().nova_conta(cliente, numero)
+        self._limite = limite
+        self._limite_saques = limite_saques
+    
+    @property
+    def limite(self):
+        return self._limite
+    
+    @property
+    def limite_saques(self):
+        return self._limite_saques
+
+class Historico:
+    def __init__(self):
+        self._transacoes = []
+
+    @property
+    def transacoes(self):
+        return self._transacoes
+
 def menu(primeiro_menu):
     if not primeiro_menu: print()
 
