@@ -28,8 +28,8 @@ class SistemaPessoasFisicas:
         nome = input("Digite o nome: ")
         data_nascimento = input("Digite a data de nascimento: ") # VERIFICAR DEPOIS
         endereco = input("Digite o endereço: ")
-        cliente = PessoaFisica(nome, cpf, data_nascimento, endereco)
-        self._clientes.append(cliente)
+        self._clientes.append(PessoaFisica(nome, cpf, data_nascimento, endereco))
+        print("Cliente cadastrado com sucesso.")
         return True
 
     def validar_cpf(self, cpf):
@@ -47,6 +47,11 @@ class SistemaPessoasFisicas:
             if cliente.cpf == cpf: return cliente
 
         return False
+    
+    def listar(self):
+        titulo = " PESSOAS FÍSICAS "
+        print(titulo.center(60, '='))
+        for cliente in self._clientes:  print(cliente, '\n', '='*60, sep='')
 
 class Cliente:
     def __init__(self, endereco):
@@ -66,7 +71,7 @@ class Cliente:
     
     def realizar_transacao(conta, transacao):
         pass
-
+        
 class PessoaFisica(Cliente):
     def __init__(self, nome, cpf, data_nascimento, endereco):
         super().__init__(endereco)
@@ -85,6 +90,9 @@ class PessoaFisica(Cliente):
     @property
     def data_nascimento(self):
         return self._data_nascimento
+    
+    def __str__(self):
+        return f"Nome: {self._nome}\nCpf: {self._cpf}\nData de nascimento: {self._data_nascimento}\nEndereço: {self._endereco}\nNúmero de contas: {len(self._contas)}"
 
 class Conta:
     def __init__(self, numero, agencia, cliente, historico):
