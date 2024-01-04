@@ -87,7 +87,7 @@ class Cliente:
         self._contas.append(conta)
     
     def realizar_transacao(conta, transacao):
-        pass
+        transacao.registrar(conta)
         
 class PessoaFisica(Cliente):
     def __init__(self, nome, cpf, data_nascimento, endereco):
@@ -143,19 +143,68 @@ class Conta:
     def nova_conta(cls, numero, cliente):
         return cls(numero, cliente)
 
+    def sacar(self, valor):
+        if valor > self._saldo:
+            print("ERRO: O valor informado é maior que o saldo da conta.")
+            return False
+        
+        if valor <= 0:
+            print("ERRO: O valor informado é menor ou igual a zero.")
+            return False
+        
+        self._saldo -= valor
+        print("Saque realizado com sucesso.")
+        return True
+
+    def depositar(self, valor):
+        if valor <= 0:
+            print("ERRO: O valor do depósito deve ser maior que zero.")
+            return False
+        
+        self._saldo += valor
+        print("Depósito realizado com sucesso.")
+        return True
+
 class ContaCorrente(Conta):
     def __init__(self, numero, cliente, limite=500, limite_saques=3):
         super().__init__(numero, cliente)
-        self._limite = limite
+        self._limite_valor_saque = limite
+        self._numero_saque = 0
         self._limite_saques = limite_saques
     
     @property
-    def limite(self):
-        return self._limite
+    def limite_valor_saque(self):
+        return self._limite_valor_saque
     
     @property
     def limite_saques(self):
         return self._limite_saques
+    
+    @property
+    def numero_saque(self):
+        return self._numero_saque
+    
+    def sacar(self, valor):
+        if self._numero_saque == self._limite_saques:
+            print("ERRO: Limite de saque diário atingido.")
+            return False
+        
+        if valor > self._limite_valor_saque:
+            print("ERRO: Valor informado supera o limite de dinheiro que pode ser sacado.")
+            return False
+
+        if valor > self._saldo:
+            print("ERRO: O valor informado é maior que o saldo da conta.")
+            return False
+        
+        if valor <= 0:
+            print("ERRO: O valor informado é menor ou igual a zero.")
+            return False
+        
+        self._saldo -= valor
+        self._numero_saque += 1
+        print("Saque realizado com sucesso.")
+        return True
 
 class Historico:
     def __init__(self):
@@ -164,6 +213,9 @@ class Historico:
     @property
     def transacoes(self):
         return self._transacoes
+    
+    def adicionar_transacao(self, transacao):
+        self._transacoes.append(transacao)
 
 class Transacao(ABC):
     @property
@@ -183,8 +235,16 @@ class Saque(Transacao):
     def valor(self):
         return self._valor
 
-    def registrar(self, conta): # IMPLEMENTAR
-        pass
+    def registrar(self, conta):
+        operacao = conta.sacar(self._valor)
+        if operacao: 
+            conta.historico.adicionar_transacao(self)
+            return True
+        
+        return False
+
+    def __str__(self):
+        return f"- Saque: R${self._valor : .2f}"
 
 class Deposito(Transacao):
     def __init__(self, valor):
@@ -194,8 +254,16 @@ class Deposito(Transacao):
     def valor(self):
         return self._valor
 
-    def registrar(self, conta): # IMPLEMENTAR
-        pass
+    def registrar(self, conta):
+        operacao = conta.depositar(self._valor)
+        if operacao:
+            conta.historico.adicionar_conta(self)
+            return True
+    
+        return False
+    
+    def __str__(self):
+        return f"+ Depósito: R${self._valor : .2f}"
 
 def menu(primeiro_menu):
     if not primeiro_menu: print()
@@ -214,24 +282,6 @@ def menu(primeiro_menu):
     print("Insira a operação desejada :", end = " ")
 
     return int(input())
-
-def cadastrar_conta(agencia, numero_conta, /, *, usuarios: list, contas: list):
-    cpf = input("Insira o cpf do proprietário: ")
-
-    if cpf == "adm": 
-        listar_contas(contas=contas)
-        return False
-    
-    #verificacao_cpf = validar_cpf(cpf)
-    #if verificacao_cpf: usuario = procurar_usuario(usuarios, cpf, True)
-    else: return False
-    if usuario:
-        contas.append({"agencia":agencia, "numero":numero_conta, "dono":usuario})
-        print("Conta criada com sucesso.")
-        return True
-    else:
-        print("ERRO: cpf não cadastrado.")
-        return False
 
 def listar_contas(*, contas: list):
     titulo = " CONTAS "
@@ -298,19 +348,13 @@ def main():
         os.system("cls")
     
         if operacao == 1:
-            #cadastrar_usuario(usuarios=usuarios)
             pass
         
         elif operacao == 2:
-            #listar_usuarios(usuarios=usuarios)
             pass
 
         elif operacao == 3:
-            cadastro = cadastrar_conta(NUM_AGENCIA, 
-                                       numero_conta, 
-                                       usuarios=usuarios, 
-                                       contas=contas)
-            if cadastro: numero_conta += 1
+            pass
         
         elif operacao == 4:
             listar_contas(contas=contas)
@@ -358,13 +402,6 @@ def criar_conta(sistema):
 
 def testes():
     sistema = SistemaGeral()
-    sistema.pessoas_fisicas.cadastrar()
-    sistema.pessoas_fisicas.cadastrar()
-    criar_conta(sistema)
-    criar_conta(sistema)
-    criar_conta(sistema)
-    criar_conta(sistema)
-    sistema.pessoas_fisicas.listar()
 
 
 
