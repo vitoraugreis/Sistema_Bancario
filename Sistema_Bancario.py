@@ -1,10 +1,57 @@
 import os
 from abc import ABC, abstractmethod, abstractproperty
 
+class SistemaGeral:
+    def __init__(self):
+        self._pessoas_fisicas = SistemaPessoasFisicas()
+
+    @property
+    def pessoas_fisicas(self):
+        return self._pessoas_fisicas
+
+class SistemaPessoasFisicas:
+    def __init__(self):
+        self._clientes = []
+    
+    @property
+    def clientes(self):
+        return self._clientes
+    
+    def cadastrar(self):
+        cpf = input("Digite o cpf: ")
+        if not self.validar_cpf(cpf): return False
+
+        if self.pesquuisa_cpf(cpf):
+            print("ERRO: CPF já existente no sistema.")
+            return False
+        
+        nome = input("Digite o nome: ")
+        data_nascimento = input("Digite a data de nascimento: ") # VERIFICAR DEPOIS
+        endereco = input("Digite o endereço: ")
+        cliente = PessoaFisica(nome, cpf, data_nascimento, endereco)
+        self._clientes.append(cliente)
+        return True
+
+    def validar_cpf(self, cpf):
+        if not cpf.isnumeric():
+            print("ERRO: cpf deve conter apenas números.")
+            return False
+        if len(cpf) != 11:
+            print("ERRO: cpf informado é inválido.\nO cpf deve conter 11 números.")
+            return False
+        
+        return True
+
+    def pesquuisa_cpf(self, cpf):
+        for cliente in self._clientes:
+            if cliente.cpf == cpf: return cliente
+
+        return False
+
 class Cliente:
     def __init__(self, endereco):
         self._endereco = endereco
-        self.contas = []
+        self._contas = []
 
     @property
     def endereco(self):
@@ -306,4 +353,8 @@ def main():
         else:
             print("Operação inválida.")
 
-main()
+def testes():
+    sistema = SistemaGeral()
+
+# main()
+testes()
