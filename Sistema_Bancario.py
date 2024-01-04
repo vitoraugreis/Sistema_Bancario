@@ -8,6 +8,13 @@ class SistemaGeral:
     @property
     def pessoas_fisicas(self):
         return self._pessoas_fisicas
+    
+    def busca_geral(self, chave):
+        for sistema in self.__dict__.values():
+            cliente = sistema.buscar(chave)
+            if cliente: return cliente
+        
+        return False
 
 class SistemaPessoasFisicas:
     def __init__(self):
@@ -21,7 +28,7 @@ class SistemaPessoasFisicas:
         cpf = input("Digite o cpf: ")
         if not self.validar_cpf(cpf): return False
 
-        if self.pesquuisa_cpf(cpf):
+        if self.buscar(cpf):
             print("ERRO: CPF já existente no sistema.")
             return False
         
@@ -42,7 +49,7 @@ class SistemaPessoasFisicas:
         
         return True
 
-    def pesquuisa_cpf(self, cpf):
+    def buscar(self, cpf):
         for cliente in self._clientes:
             if cliente.cpf == cpf: return cliente
 
