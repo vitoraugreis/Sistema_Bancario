@@ -9,10 +9,18 @@ class SistemaGeral:
     def pessoas_fisicas(self):
         return self._pessoas_fisicas
     
-    def busca_geral(self, chave):
+    def busca_geral_cliente(self, chave):
         for sistema in self.__dict__.values():
             cliente = sistema.buscar(chave)
             if cliente: return cliente
+        
+        return False
+    
+    def busca_geral_conta(self, numero):
+        for sistema in self.__dict__.values():
+            for cliente in sistema.clientes:
+                for conta in cliente.contas:
+                    if conta.numero == numero: return conta # Talvez não seja muito bom por nivel de complexidade.
         
         return False
 
@@ -73,7 +81,7 @@ class Cliente:
     
     @property
     def contas(self):
-        return self.contas
+        return self._contas
     
     def adicionar_conta(self, conta): # Veridicação da condição da conta feita em outro lugar.
         self._contas.append(conta)
@@ -104,7 +112,7 @@ class PessoaFisica(Cliente):
         return f"Nome: {self._nome}\nCpf: {self._cpf}\nData de nascimento: {self._data_nascimento}\nEndereço: {self._endereco}\nNúmero de contas: {len(self._contas)}"
 
 class Conta:
-    def __init__(self, numero, agencia, cliente, historico):
+    def __init__(self, numero, cliente):
         self._saldo = 0
         self._numero = numero
         self._agencia = "0001"
@@ -132,12 +140,12 @@ class Conta:
         return self._historico
 
     @classmethod
-    def nova_conta(cls, cliente, numero):
-        pass
+    def nova_conta(cls, numero, cliente):
+        return cls(numero, cliente)
 
 class ContaCorrente(Conta):
     def __init__(self, numero, cliente, limite=500, limite_saques=3):
-        super().nova_conta(cliente, numero)
+        super().__init__(numero, cliente)
         self._limite = limite
         self._limite_saques = limite_saques
     
@@ -207,49 +215,6 @@ def menu(primeiro_menu):
 
     return int(input())
 
-def cadastrar_usuario(*, usuarios: list):
-    cpf = input("Informe o cpf do usuário: ")
-
-    verificacao_cpf = validar_cpf(cpf)
-    if verificacao_cpf:
-        verificacao_usuario = not procurar_usuario(usuarios, cpf, False)
-        if verificacao_usuario:
-            nome = input("Informe o nome do usuário: ")
-            data_nascimento = input("Informe a data de nascimento do usuário (DD/MM/AAAA): ")
-            endereco = input("Informe o endereço do usuário (logadouto, número - bairro - cidade/sigla do estado): ")
-            usuarios.append({"cpf" : cpf, "nome" : nome, "data_nascimento" : data_nascimento, "endereco": endereco})
-        else:
-            print("ERRO: cpf já cadastrado.")
-
-def validar_cpf(cpf, /):
-    if not cpf.isnumeric():
-        print("ERRO: cpf deve conter apenas números.")
-        return False
-    if len(cpf) != 11:
-        print("ERRO: cpf informado é inválido.\nO cpf deve conter 11 números.")
-        return False
-    
-    return True
-
-def procurar_usuario(usuarios: list, cpf, retornar_usuario, /):
-    for usuario in usuarios:
-        if cpf in usuario.values():
-            if retornar_usuario == True: return usuario
-            else: return True
-    return False
-
-def listar_usuarios(*, usuarios: list):
-    titulo = " USUÁRIOS "
-    print(titulo.center(60, '='))
-    if not usuarios: print("Nenhum usuário foi cadastrado.", '='*60, sep = '\n')
-    else:
-        for usuario in usuarios:
-            print(f"Nome: {usuario['nome']}")
-            print(f"CPF: {usuario['cpf']}")
-            print(f"Data de nascimento: {usuario['data_nascimento']}")
-            print(f"Endereço: {usuario['endereco']}")
-            print('='*60)
-
 def cadastrar_conta(agencia, numero_conta, /, *, usuarios: list, contas: list):
     cpf = input("Insira o cpf do proprietário: ")
 
@@ -257,8 +222,8 @@ def cadastrar_conta(agencia, numero_conta, /, *, usuarios: list, contas: list):
         listar_contas(contas=contas)
         return False
     
-    verificacao_cpf = validar_cpf(cpf)
-    if verificacao_cpf: usuario = procurar_usuario(usuarios, cpf, True)
+    #verificacao_cpf = validar_cpf(cpf)
+    #if verificacao_cpf: usuario = procurar_usuario(usuarios, cpf, True)
     else: return False
     if usuario:
         contas.append({"agencia":agencia, "numero":numero_conta, "dono":usuario})
@@ -333,10 +298,12 @@ def main():
         os.system("cls")
     
         if operacao == 1:
-            cadastrar_usuario(usuarios=usuarios)
+            #cadastrar_usuario(usuarios=usuarios)
+            pass
         
         elif operacao == 2:
-            listar_usuarios(usuarios=usuarios)
+            #listar_usuarios(usuarios=usuarios)
+            pass
 
         elif operacao == 3:
             cadastro = cadastrar_conta(NUM_AGENCIA, 
@@ -370,8 +337,36 @@ def main():
         else:
             print("Operação inválida.")
 
+def criar_conta(sistema):
+    cpf = input("Digite o CPF: ")
+    cliente = sistema.busca_geral_cliente(cpf)
+    if not cliente:
+        print("ERRO: Cpf inválido.")
+        return False
+    
+    numero = input("Digite o número da nova conta: ")
+    busca_conta = sistema.busca_geral_conta(numero)
+    if busca_conta:
+        print("ERRO: Número de conta já existente.")
+        return False
+    
+    conta = ContaCorrente.nova_conta(numero, cliente)
+    cliente.adicionar_conta(conta)
+    print("Conta criada com sucesso.")
+    return True
+
+
 def testes():
     sistema = SistemaGeral()
+    sistema.pessoas_fisicas.cadastrar()
+    sistema.pessoas_fisicas.cadastrar()
+    criar_conta(sistema)
+    criar_conta(sistema)
+    criar_conta(sistema)
+    criar_conta(sistema)
+    sistema.pessoas_fisicas.listar()
+
+
 
 # main()
 testes()
