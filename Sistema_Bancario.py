@@ -51,7 +51,9 @@ class SistemaPessoasFisicas:
     def listar(self):
         titulo = " PESSOAS FÍSICAS "
         print(titulo.center(60, '='))
-        for cliente in self._clientes:  print(cliente, '\n', '='*60, sep='')
+        if not self._clientes: print("Nenhuma pessoa física foi cadastrada.", '='*60, sep='\n')
+        else:
+            for cliente in self._clientes:  print(cliente, '='*60, sep='\n')
 
 class Cliente:
     def __init__(self, endereco):
