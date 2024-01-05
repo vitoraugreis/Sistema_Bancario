@@ -106,8 +106,14 @@ class Cliente:
     def contas(self):
         return self._contas
     
-    def adicionar_conta(self, conta): # Veridicação da condição da conta feita em outro lugar.
+    def adicionar_conta(self, conta):
         self._contas.append(conta)
+
+    def buscar_conta(self, numero):
+        for conta in self._contas:
+            if conta.numero == numero: return conta
+
+        return False
     
     def realizar_transacao(self, conta, transacao):
         transacao.registrar(conta)
@@ -175,26 +181,29 @@ class Conta:
 
     def sacar(self, valor):
         if valor > self._saldo:
-            print("ERRO: O valor informado é maior que o saldo da conta.")
+            print(VERMELHO + "ERRO: O valor informado é maior que o saldo da conta.")
             return False
         
         if valor <= 0:
-            print("ERRO: O valor informado é menor ou igual a zero.")
+            print(VERMELHO + "ERRO: O valor informado é menor ou igual a zero.")
             return False
         
         self._saldo -= valor
-        print("Saque realizado com sucesso.")
+        print(VERDE + "Saque realizado com sucesso.")
         return True
 
     def depositar(self, valor):
         if valor <= 0:
-            print("ERRO: O valor do depósito deve ser maior que zero.")
+            print(VERMELHO + "ERRO: O valor do depósito deve ser maior que zero.")
             return False
         
         self._saldo += valor
-        print("Depósito realizado com sucesso.")
+        print(VERDE + "Depósito realizado com sucesso.")
         return True
     
+    def mostrar_transacoes(self):
+        self._historico.listar(self._saldo)
+
     def __str__(self):
         return f"Proprietário: {self._cliente.nome}\nNúmero: {self._numero}\tAgência: {self._agencia}\nSaldo: {self._saldo : .2f}\nNúmero de Operações: {len(self._historico.transacoes)}"
 
@@ -219,24 +228,24 @@ class ContaCorrente(Conta):
     
     def sacar(self, valor):
         if self._numero_saque == self._limite_saques:
-            print("ERRO: Limite de saque diário atingido.")
+            print(VERMELHO + "ERRO: Limite de saque diário atingido.")
             return False
         
         if valor > self._limite_valor_saque:
-            print("ERRO: Valor informado supera o limite de dinheiro que pode ser sacado.")
+            print(VERMELHO + "ERRO: Valor informado supera o limite de dinheiro que pode ser sacado.")
             return False
 
         if valor > self._saldo:
-            print("ERRO: O valor informado é maior que o saldo da conta.")
+            print(VERMELHO + "ERRO: O valor informado é maior que o saldo da conta.")
             return False
         
         if valor <= 0:
-            print("ERRO: O valor informado é menor ou igual a zero.")
+            print(VERMELHO + "ERRO: O valor informado é menor ou igual a zero.")
             return False
         
         self._saldo -= valor
         self._numero_saque += 1
-        print("Saque realizado com sucesso.")
+        print(VERDE + "Saque realizado com sucesso.")
         return True
 
     def __str__(self):
@@ -253,10 +262,13 @@ class Historico:
     def adicionar_transacao(self, transacao):
         self._transacoes.append(transacao)
 
-    def listar(self):
+    def listar(self, saldo):
         titulo = " TRANSAÇÕES "
         print(titulo.center(60, '='))
-        for transacao in self._transacoes: print(transacao)
+        if not self._transacoes: print("Não foram feitas transações nesta conta.", '='*60, sep='\n')
+        else:
+            for transacao in self._transacoes: print(transacao)
+            print('', AMARELO + f"Saldo: R$ {saldo : .2f}" + RESET, '='*60, sep='\n')
 
 class Transacao(ABC):
     @property
@@ -285,7 +297,7 @@ class Saque(Transacao):
         return False
 
     def __str__(self):
-        return f"- Saque: R${self._valor : .2f}"
+        return VERMELHO + f"[-] Saque: R${self._valor : .2f}"
 
 class Deposito(Transacao):
     def __init__(self, valor):
@@ -304,13 +316,13 @@ class Deposito(Transacao):
         return False
     
     def __str__(self):
-        return f"+ Depósito: R${self._valor : .2f}"
+        return VERDE + f"[+] Depósito: R${self._valor : .2f}"
 
 def menu(primeiro_menu):
     if not primeiro_menu: print()
 
     menu = " MENU "
-    print(menu.center(30, '-'))
+    print(menu.center(60, '-'))
     print("(1) - Cadastrar cliente")
     print("(2) - Listar clientes")
     print("(3) - Cadastrar conta")
@@ -319,73 +331,41 @@ def menu(primeiro_menu):
     print("(6) - Sacar")
     print("(7) - Extrato")
     print("(0) - Sair")
-    print('-'*30)
-    print("Insira a operação desejada :", end = " ")
+    print('-'*60)
+    return input("Insira a operação desejada: ")
 
-    return int(input())
-
-def saque(*, saldo, valor, extrato, max_valor_saque, max_saque_diario, numero_saques):
-    if numero_saques == max_saque_diario:
-        print("Operacao invalida. Limite de saques diarios atingido.")
-    elif valor > max_valor_saque:
-        print("Valor invalido. O limite de valor de saque eh de R$ 500.00")
-    elif valor <= 0:
-        print("Valor invalido. O valor de saque deve ser maior que zero.")
-    elif valor > saldo:
-        print("Valor invalido. O valor inserido eh maior que o saldo da conta.")
-    else:
-        saldo -= valor
-        numero_saques += 1
-        extrato += f"- Saque: R$ {valor : .2f}\n"
-        print("Saque feito com sucesso!")
-
-    return saldo, extrato, numero_saques
-
-def deposito(saldo, valor, extrato, /):
-    if valor <= 0:
-        print("Valor invalido. O valor inserido deve ser maior que 0.")
-    else:
-        saldo += valor
-        extrato += f"+ Deposito: R$ {valor : .2f}\n"
-        print("Depósito feito com sucesso!")
-
-    return saldo, extrato
-
-def historico(saldo, /, *,  extrato):
-    print("=============== EXTRATO ===============")
-    print("A conta não possui extrato\n" if not extrato else extrato)
-    print(f"Saldo: R$ {saldo : .2f}")
-    print("=======================================")
-
-def cadastrar_cliente(sistema):
+def menu_cliente():
     titulo_menu = " TIPOS DE CLIENTE "
-    print(titulo_menu.center(30, '-'))
+    print(titulo_menu.center(60, '-'))
     print("(1) - Pessoa Física")
     print("(0) - Cancelar")
-    print('-'*30)
-    opcao = int(input("Insira o tipo de cliente desejado: "))
+    print('-'*60)
+    return input("Insira o tipo de cliente desejado: ")
 
-    if opcao == 1: sistema.pessoas_fisicas.cadastrar()
-    elif opcao != 0: print(VERMELHO + "Operação inválida.")
+def menu_contas():
+    titulo_menu = " TIPOS DE CONTA "
+    print(titulo_menu.center(60, '-'))
+    print("(1) - Conta Corrente")
+    print("(0) - Cancelar")
+    print('-'*60)
+    return input("Insira o tipo de conta desejada: ")
 
+def cadastrar_cliente(sistema):
+    opcao = menu_cliente()
+    if opcao == '1': sistema.pessoas_fisicas.cadastrar()
+    elif opcao != '0': print(VERMELHO + "ERRO: Operação inválida.")
     return
 
 def criar_conta(sistema):
-    titulo_menu = " TIPOS DE CONTA "
-    print(titulo_menu.center(30, '-'))
-    print("(1) - Conta Corrente")
-    print("(0) - Cancelar")
-    print('-'*30)
-    opcao = int(input("Insira o tipo de cliente desejado: "))
-
-    if opcao == 1:
+    opcao = menu_contas()
+    if opcao == '1':
         cpf = input("Digite o CPF: ")
         cliente = sistema.busca_geral_cliente(cpf)
         if not cliente:
             print(VERMELHO + "ERRO: Cpf inválido.")
             return False
         
-        numero = input("Digite o número da nova conta: ")
+        numero = int(input("Digite o número da nova conta: "))
         busca_conta = sistema.busca_geral_conta(numero)
         if busca_conta:
             print(VERMELHO + "ERRO: Número de conta já existente.")
@@ -396,43 +376,95 @@ def criar_conta(sistema):
         print(VERDE + "Conta criada com sucesso.")
         return True
     
-    elif opcao != 0: print(VERMELHO + "Operação inválida.")
+    elif opcao != '0': print(VERMELHO + "ERRO: Operação inválida.")
 
     return
 
 def listar_contas(sistema):
     titulo_menu_lista = " OPÇÕES "
-    print(titulo_menu_lista.center(30, '-'))
+    print(titulo_menu_lista.center(60, '-'))
     print("(1) - Listar todas as contas")
     print("(2) - Listar todas as contas de um cliente")
+    print("(3) - Listar uma conta pelo número")
     print("(0) - Cancelar")
-    print('-'*30)
-    opcao_lista = int(input("Insira o tipo de cliente desejado: "))
+    print('-'*60)
+    opcao_lista = input("Insira o tipo de cliente desejado: ")
     os.system("cls")
 
-    if opcao_lista == 1: sistema.listagem_geral_contas()
-    elif opcao_lista == 2:
-        titulo_menu_cliente = " TIPOS DE CLIENTE "
-        print(titulo_menu_cliente.center(30, '-'))
-        print("(1) - Pessoa Física")
-        print("(0) - Cancelar")
-        print('-'*30)
-        opcao_cliente = int(input("Insira o tipo de cliente desejado: "))
+    if opcao_lista == '1': sistema.listagem_geral_contas()
+
+    elif opcao_lista == '2':
+        opcao_cliente = menu_cliente()
         os.system("cls")
 
-        if opcao_cliente == 1:
+        if opcao_cliente == '1':
             cpf = input("Insira o cpf do cliente desejado: ")
             cliente = sistema.busca_geral_cliente(cpf)
             if cliente: 
                 print()
                 cliente.listar_contas()
             else: print(VERMELHO + "ERRO: Cliente inexistente.")
-        elif opcao_cliente != 0: print(VERMELHO + "Operação inválida.")
+        elif opcao_cliente != '0': print(VERMELHO + "ERRO: Operação inválida.")
 
+    elif opcao_lista == '3':
+        numero = int(input("Digite o número da conta: "))
+        conta = sistema.busca_geral_conta(numero)
+        if conta:
+            titulo_conta = f" CONTA {numero} "
+            print(titulo_conta.center(60, '='), conta, '='*60, sep='\n')
+        else: print(VERMELHO + "ERRO: Conta inexistente.")
 
-    elif opcao_lista != 0: print(VERMELHO + "Operação inválida.")
+    elif opcao_lista != '0': print(VERMELHO + "ERRO: Operação inválida.")
 
     return
+
+def depositar(sistema):
+    opcao = menu_cliente()
+    if opcao == '1':
+        cpf = input("Insira o cpf do proprietário da conta: ")
+        cliente = sistema.busca_geral_cliente(cpf)
+        if cliente:
+            numero = int(input("Insira o número da conta: "))
+            conta = cliente.buscar_conta(numero)
+            if conta:
+                valor = float(input("Insira o valor do depósito: "))
+                transacao = Deposito(valor)
+                cliente.realizar_transacao(conta, transacao)
+            else: print(VERMELHO + "ERRO: Esta conta não pertence a este cliente ou não existe.")
+        else: print(VERMELHO + "ERRO: Cpf informado não registrado.")
+    
+    elif opcao != '0': print(VERMELHO + "ERRO: Operação inválida.")
+
+def sacar(sistema):
+    opcao = menu_cliente()
+    if opcao == '1':
+        cpf = input("Insira o cpf do proprietário da conta: ")
+        cliente = sistema.busca_geral_cliente(cpf)
+        if cliente:
+            numero = int(input("Insira o número da conta: "))
+            conta = cliente.buscar_conta(numero)
+            if conta:
+                valor = float(input("Insira o valor do saque: "))
+                transacao = Saque(valor)
+                cliente.realizar_transacao(conta, transacao)
+            else: print(VERMELHO + "ERRO: Esta conta não pertence a este cliente ou não existe.")
+        else: print(VERMELHO + "ERRO: Cpf informado não registrado.")
+    
+    elif opcao != '0': print(VERMELHO + "ERRO: Operação inválida.")
+
+def historico(sistema):
+    opcao = menu_cliente()
+    if opcao == '1':
+        cpf = input("Insira o cpf do proprietário da conta: ")
+        cliente = sistema.busca_geral_cliente(cpf)
+        if cliente:
+            numero = int(input("Insira o número da conta: "))
+            conta = cliente.buscar_conta(numero)
+            if conta: conta.mostrar_transacoes()
+            else: print(VERMELHO + "ERRO: Esta conta não pertence a este cliente ou não existe.")
+        else: print(VERMELHO + "ERRO: Cpf informado não registrado.")
+    
+    elif opcao != '0': print(VERMELHO + "ERRO: Operação inválida.")
 
 def main():
     sistema = SistemaGeral()
@@ -445,56 +477,31 @@ def main():
         primeiro_menu = False
         os.system("cls")
     
-        if operacao == 1:
+        if operacao == '1':
             cadastrar_cliente(sistema)
         
-        elif operacao == 2:
+        elif operacao == '2':
             sistema.listagem_geral_clientes()
 
-        elif operacao == 3:
+        elif operacao == '3':
             criar_conta(sistema)
         
-        elif operacao == 4:
+        elif operacao == '4':
             listar_contas(sistema)
 
-        elif operacao == 5:
-            pass
+        elif operacao == '5':
+            depositar(sistema)
     
-        elif operacao == 6:
-            pass
+        elif operacao == '6':
+            sacar(sistema)
     
-        elif operacao == 7:
-            pass
+        elif operacao == '7':
+            historico(sistema)
     
-        elif operacao == 0:
+        elif operacao == '0':
             break
     
         else:
-            print(VERMELHO + "Operação inválida.")
-
-
-def testes():
-    sistema = SistemaGeral()
-    sistema.pessoas_fisicas.cadastrar()
-    criar_conta(sistema)
-
-    cpf = input()
-    numero = input()
-    conta = sistema.busca_geral_conta(numero)
-    cliente = sistema.busca_geral_cliente(cpf)
-
-    valor = float(input())
-    transacao = Deposito(valor)
-    cliente.realizar_transacao(conta, transacao)
-
-    valor = float(input())
-    transacao = Saque(valor)
-    cliente.realizar_transacao(conta, transacao)
-
-    cliente.listar_contas()
-    print('-'*100)
-    conta.historico.listar()
-
+            print(VERMELHO + "ERRO: Operação inválida.")
 
 main()
-#testes()
